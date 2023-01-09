@@ -11,7 +11,7 @@
 // !!! Argon2 does not enable std feature flag by default.
 
 //! List of all commands:
-//! - `List - list all accounts
+//! - List - list all accounts
 //! - Edit <account> - edit given account password
 //! - Add <account> - add an account
 //! - Check - test the user on all accounts in the database
@@ -21,6 +21,8 @@
 //!
 //! TODO
 //! [ ] Improve command documentation
+
+#![warn(clippy::pedantic)]
 
 use clap::{Parser, Subcommand};
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
@@ -38,7 +40,7 @@ mod remove;
 ///
 /// Program is a CLI for adding, editing, removing, listing, and most importantly, testing a
 /// user's knowledge of their stored passwords. All passwords are hashed using Argon2 before
-/// being stored in a local-only SQLite database. Even if your computer is compromised, all
+/// being stored in a local-only `SQLite` database. Even if your computer is compromised, all
 /// your passwords are safe behind industry-grade hashing and the passwords do no leave your
 /// device.
 #[derive(Parser)]
@@ -63,7 +65,9 @@ async fn main() -> anyhow::Result<()> {
 
     const DB_URL: &str = "sqlite://./db.db";
 
-    if !Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
+    if Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
+        // println!("Database already exists");
+    } else {
         println!("Creating local database...");
         match Sqlite::create_database(DB_URL).await {
             Ok(_) => {
@@ -71,12 +75,10 @@ async fn main() -> anyhow::Result<()> {
                 println!("Setting up database...");
                 let pool = SqlitePool::connect(DB_URL).await?;
                 database::setup_db(&pool).await?;
-                println!("Database set up")
+                println!("Database set up");
             }
             Err(error) => panic!("error: {}", error),
         };
-    } else {
-        // println!("Database already exists");
     }
 
     let pool = SqlitePool::connect(DB_URL).await?;

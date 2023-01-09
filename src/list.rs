@@ -14,7 +14,7 @@ pub async fn list_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
 
     if results.is_empty() {
         println!("You currently have no accounts saved.");
-        println!("Use the command 'add <ACCOUNT>' to add an account.")
+        println!("Use the command 'add <ACCOUNT>' to add an account.");
     }
 
     for result in &results {

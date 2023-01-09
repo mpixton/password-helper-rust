@@ -19,7 +19,7 @@ pub async fn check_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
     let results = database::get_all_accounts(pool).await?;
 
     for result in &results {
-        let correct = password::verify_password(result.password()).await?;
+        let correct = password::verify_password(result.password())?;
         println!("That is {correct}");
     }
 
@@ -32,7 +32,7 @@ pub async fn check_account(pool: &SqlitePool, account: &String) -> anyhow::Resul
 
     let result = database::get_account(pool, account).await?;
 
-    let correct = password::verify_password(result.password()).await?;
+    let correct = password::verify_password(result.password())?;
 
     println!("That is {correct}");
 

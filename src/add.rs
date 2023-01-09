@@ -16,7 +16,7 @@ pub struct Add {
 /// Ask a user for their account's password, and then store the account and password hash in the database.
 pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     println!("Adding account {account}");
-    let pw = password::get_password_from_user().await?;
+    let pw = password::get_password_from_user()?;
 
     let result = database::add_account(pool, account, &pw).await;
 
