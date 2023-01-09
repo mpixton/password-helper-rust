@@ -1,22 +1,19 @@
+use crate::database;
 use clap::Args;
 use sqlx::SqlitePool;
 
-use crate::{database, error};
-
 /// Remove all accounts or specific account
+/// 
+/// If [ACCOUNT] is provided, remove only that account. If omitted, purge all accounts from the 
+/// database and list all the accounts removed.
 #[derive(Args)]
 pub struct Remove {
+    /// Name of the specific account to remove
     pub account: Option<String>,
 }
 
 /// Remove all accounts from the database.
-pub async fn remove_all_accounts(pool: &SqlitePool) -> Result<(), error::AppErrors> {
-    // let accounts = ["Bw", "Linux-Work"];
-    // println!("Removing all accounts...");
-    // for account in accounts {
-    //     println!("Removing {account}");
-    // }
-
+pub async fn remove_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
     println!("Removing all accounts...");
 
     let results = database::get_all_accounts(pool).await?;
@@ -32,7 +29,7 @@ pub async fn remove_all_accounts(pool: &SqlitePool) -> Result<(), error::AppErro
 }
 
 /// Remove a specific account from the database.
-pub async fn remove_account(pool: &SqlitePool, account: &String) -> Result<(), error::AppErrors> {
+pub async fn remove_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     println!("Removing account {account}");
 
     database::delete_account(pool, account).await?;

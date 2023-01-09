@@ -1,14 +1,17 @@
-use crate::{database, error, password};
+use crate::{database, password};
 use clap::Args;
 use sqlx::SqlitePool;
 
 /// Edit an account's password
+/// 
+/// Edit the <ACCOUNT>'s password. The command will silently fail if the <ACCOUNT> has not been previously 
 #[derive(Args)]
 pub struct Edit {
+    /// Name of the account to edit
     pub account: String,
 }
 
-pub async fn edit_account(pool: &SqlitePool, account: &String) -> Result<(), error::AppErrors> {
+pub async fn edit_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     println!("Editing account {account}");
 
     let new_password = password::get_password_from_user().await?;

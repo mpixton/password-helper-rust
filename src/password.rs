@@ -1,4 +1,3 @@
-use crate::error::AppErrors;
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
@@ -6,7 +5,7 @@ use argon2::{
 use rpassword::prompt_password;
 
 /// Prompts the user for a password, hides the input, hashes the result, and returns the hash.
-pub async fn get_password_from_user() -> Result<String, AppErrors> {
+pub async fn get_password_from_user() -> anyhow::Result<String> {
     let salt = SaltString::generate(&mut OsRng);
 
     let hasher = Argon2::default();
@@ -22,8 +21,7 @@ pub async fn get_password_from_user() -> Result<String, AppErrors> {
 }
 
 /// Prompts the user for a password, then compares it to a hash to see if they are the same.
-#[allow(dead_code)]
-pub async fn verify_password(password_hash: &String) -> Result<bool, AppErrors> {
+pub async fn verify_password(password_hash: &String) -> anyhow::Result<bool> {
     let attempt = prompt_password("Password:  ")?;
 
     let parsed_hash = PasswordHash::new(&password_hash)?;

@@ -11,13 +11,16 @@
 // !!! Argon2 does not enable std feature flag by default.
 
 //! List of all commands:
-//! List - list all accounts
-//! Edit <account> - edit given account password
-//! Add <account> - add an account
-//! Check - test the user on all accounts in the database
-//! Check <account> - test the user on a specific account
-//! Remove - remove all accounts from the database
-//! Remove <account> - remove a specific account from the database
+//! - `List - list all accounts
+//! - Edit <account> - edit given account password
+//! - Add <account> - add an account
+//! - Check - test the user on all accounts in the database
+//! - Check <account> - test the user on a specific account
+//! - Remove - remove all accounts from the database
+//! - Remove <account> - remove a specific account from the database
+//!
+//! TODO
+//! [ ] Improve command documentation
 
 use clap::{Parser, Subcommand};
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
@@ -33,10 +36,13 @@ mod remove;
 
 /// Utility to help memorize passwords
 ///
-/// This is a longer description.
+/// Program is a CLI for adding, editing, removing, listing, and most importantly, testing a
+/// user's knowledge of their stored passwords. All passwords are hashed using Argon2 before
+/// being stored in a local-only SQLite database. Even if your computer is compromised, all
+/// your passwords are safe behind industry-grade hashing and the passwords do no leave your
+/// device.
 #[derive(Parser)]
 #[command(author, version, about, long_about)]
-#[command(propagate_version = true)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -49,11 +55,10 @@ enum Commands {
     Edit(edit::Edit),
     List(list::List),
     Remove(remove::Remove),
-    Testing,
 }
 
 #[tokio::main]
-async fn main() -> Result<(), error::AppErrors> {
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     const DB_URL: &str = "sqlite://./db.db";
@@ -71,7 +76,7 @@ async fn main() -> Result<(), error::AppErrors> {
             Err(error) => panic!("error: {}", error),
         };
     } else {
-        println!("Database already exists");
+        // println!("Database already exists");
     }
 
     let pool = SqlitePool::connect(DB_URL).await?;
@@ -88,13 +93,6 @@ async fn main() -> Result<(), error::AppErrors> {
             Some(account) => remove::remove_account(&pool, account).await,
             None => remove::remove_all_accounts(&pool).await,
         },
-        Commands::Testing => {
-            let hash = password::get_password_from_user().await?;
-            // let test_hash = "argon2id$v=19$m=4096,t=3,p=1$kFqodVZyHfN9ZgRjRtdlhw$cKubT7PNsFGfX+BDd6RfyHKjtRwaDpmDLXbJS8ozlEE".to_string();
-            let pw_ok = password::verify_password(&hash).await?;
-            println!("Passwords ok: {pw_ok}");
-            Ok(())
-        }
     }?;
 
     Ok(())

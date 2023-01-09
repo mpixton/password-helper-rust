@@ -1,4 +1,3 @@
-use crate::error::AppErrors;
 use sqlx::{FromRow, SqlitePool};
 
 /// Rust representation of the table in the database.
@@ -21,7 +20,7 @@ impl Account {
 }
 
 /// Set up the passwords table to store the account and passwords.
-pub async fn setup_db(pool: &SqlitePool) -> Result<(), AppErrors> {
+pub async fn setup_db(pool: &SqlitePool) -> sqlx::Result<()> {
     let mut conn = pool.acquire().await?;
 
     sqlx::query(
@@ -39,7 +38,7 @@ pub async fn setup_db(pool: &SqlitePool) -> Result<(), AppErrors> {
 }
 
 /// List all accounts stored in the database.
-pub async fn get_all_accounts(pool: &SqlitePool) -> Result<Vec<Account>, AppErrors> {
+pub async fn get_all_accounts(pool: &SqlitePool) -> sqlx::Result<Vec<Account>> {
     let mut conn = pool.acquire().await?;
 
     let results: Vec<Account> = sqlx::query_as(
@@ -59,7 +58,7 @@ pub async fn get_all_accounts(pool: &SqlitePool) -> Result<Vec<Account>, AppErro
 }
 
 /// Find an account in the database.
-pub async fn get_account(pool: &SqlitePool, account: &String) -> Result<Account, AppErrors> {
+pub async fn get_account(pool: &SqlitePool, account: &String) -> sqlx::Result<Account> {
     let mut conn = pool.acquire().await?;
 
     let result: Account = sqlx::query_as(
@@ -86,7 +85,7 @@ pub async fn update_account_password(
     pool: &SqlitePool,
     account: &String,
     new_password_hash: &String,
-) -> Result<(), AppErrors> {
+) -> sqlx::Result<()> {
     let mut conn = pool.acquire().await?;
 
     sqlx::query(
@@ -113,7 +112,7 @@ pub async fn add_account(
     pool: &SqlitePool,
     account: &String,
     password: &String,
-) -> Result<(), AppErrors> {
+) -> sqlx::Result<()> {
     let mut conn = pool.acquire().await?;
 
     sqlx::query(
@@ -134,7 +133,7 @@ pub async fn add_account(
 }
 
 /// Delete a specific account from the database.
-pub async fn delete_account(pool: &SqlitePool, account: &String) -> Result<(), AppErrors> {
+pub async fn delete_account(pool: &SqlitePool, account: &String) -> sqlx::Result<()> {
     let mut conn = pool.acquire().await?;
 
     sqlx::query(
@@ -154,7 +153,7 @@ pub async fn delete_account(pool: &SqlitePool, account: &String) -> Result<(), A
 }
 
 /// Delete all accounts from the database.
-pub async fn delete_all_accounts(pool: &SqlitePool) -> Result<(), AppErrors> {
+pub async fn delete_all_accounts(pool: &SqlitePool) -> sqlx::Result<()> {
     let mut conn = pool.acquire().await?;
 
     sqlx::query(
