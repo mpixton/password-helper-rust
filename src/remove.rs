@@ -3,8 +3,8 @@ use clap::Args;
 use sqlx::SqlitePool;
 
 /// Remove all accounts or specific account
-/// 
-/// If [ACCOUNT] is provided, remove only that account. If omitted, purge all accounts from the 
+///
+/// If [ACCOUNT] is provided, remove only that account. If omitted, purge all accounts from the
 /// database and list all the accounts removed.
 #[derive(Args)]
 pub struct Remove {

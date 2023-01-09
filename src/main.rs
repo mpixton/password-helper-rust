@@ -86,7 +86,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Add(data) => add::add_account(&pool, &data.account).await,
         Commands::Edit(data) => edit::edit_account(&pool, &data.account).await,
         Commands::Check(data) => match &data.account {
-            Some(account) => check::check_account(&pool, &account).await,
+            Some(account) => check::check_account(&pool, account).await,
             None => check::check_all_accounts(&pool).await,
         },
         Commands::Remove(data) => match &data.account {

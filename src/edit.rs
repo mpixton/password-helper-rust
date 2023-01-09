@@ -3,8 +3,8 @@ use clap::Args;
 use sqlx::SqlitePool;
 
 /// Edit an account's password
-/// 
-/// Edit the <ACCOUNT>'s password. The command will silently fail if the <ACCOUNT> has not been previously 
+///
+/// Edit the <ACCOUNT>'s password. The command will silently fail if the <ACCOUNT> has not been previously
 #[derive(Args)]
 pub struct Edit {
     /// Name of the account to edit

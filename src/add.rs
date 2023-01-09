@@ -2,11 +2,10 @@ use crate::{database, error::AppErrors, password};
 use anyhow::anyhow;
 use clap::Args;
 use sqlx::SqlitePool;
-use std::borrow::Cow;
 
 /// Add an account
 ///
-/// Asks a user for a password to store alongside the <ACCOUNT>. Only one <ACCOUNT> name may be 
+/// Asks a user for a password to store alongside the <ACCOUNT>. Only one <ACCOUNT> name may be
 /// present in the database at a time.
 #[derive(Args)]
 pub struct Add {
@@ -19,7 +18,7 @@ pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<
     println!("Adding account {account}");
     let pw = password::get_password_from_user().await?;
 
-    let result = database::add_account(&pool, account, &pw).await;
+    let result = database::add_account(pool, account, &pw).await;
 
     // This really ugly construct is the best way I found to get to the bottom of why the error was caused in
     // the database. Ultimately, errors caused by code 1555, which is the code for a Unique Constraint violation,
@@ -30,8 +29,8 @@ pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<
         match outer_err {
             sqlx::error::Error::Database(inner_err) => {
                 if let Some(code) = inner_err.code() {
-                    if Cow::from("1555") == code {
-                        Err(anyhow!(AppErrors::AccountAlreadyExistsError(
+                    if *"1555" == code {
+                        Err(anyhow!(AppErrors::AccountAlreadyExists(
                             account.to_string()
                         )))
                     } else {
@@ -41,7 +40,7 @@ pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<
                     Err(anyhow!(inner_err))
                 }
             }
-            _ => Err(anyhow!(AppErrors::DatabaseError(outer_err))),
+            _ => Err(anyhow!(AppErrors::Database(outer_err))),
         }?;
     };
 

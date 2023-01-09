@@ -21,10 +21,10 @@ pub async fn get_password_from_user() -> anyhow::Result<String> {
 }
 
 /// Prompts the user for a password, then compares it to a hash to see if they are the same.
-pub async fn verify_password(password_hash: &String) -> anyhow::Result<bool> {
+pub async fn verify_password(password_hash: &str) -> anyhow::Result<bool> {
     let attempt = prompt_password("Password:  ")?;
 
-    let parsed_hash = PasswordHash::new(&password_hash)?;
+    let parsed_hash = PasswordHash::new(password_hash)?;
 
     let passwords_match = Argon2::default()
         .verify_password(attempt.as_bytes(), &parsed_hash)
