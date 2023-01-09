@@ -13,6 +13,6 @@ argon2 = { version = "0.4", features = [ "std" ] }
 rand_core = { version = "0.6", features = [ "std" ] }
 clap = { version = "4.0", features = [ "derive" ] }
 rpassword = "7.2"
-sqlx = { version = "0.6", features = [ "runtime-async-std-native-tls", "sqlite" ] }
+tokio = { version = "1", features = [ "full" ] }
+sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "sqlite", "macros" ] }
 thiserror = "1.0"
-anyhow = "1.0"

@@ -4,8 +4,8 @@ use thiserror::Error;
 pub enum AppErrors {
     #[error("Input is invalid")]
     InputError(#[from] std::io::Error),
-    #[error("Error occurred while hashing your input")]
+    #[error("Error hashing your input: {0}")]
     HashingError(#[from] argon2::password_hash::Error),
     #[error("Error occurred while communicating with the database")]
-    DatabaseError,
+    DatabaseError(#[from] sqlx::Error),
 }

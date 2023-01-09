@@ -17,32 +17,30 @@
 //! Check - test the user on all accounts in the database
 //! Check <account> - test the user on a specific account
 //! Remove - remove all accounts from the database
-//! Remove <account> - remove a specific account from the database 
-
-
+//! Remove <account> - remove a specific account from the database
 
 use clap::{Parser, Subcommand};
+use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 
-
-mod list;
 mod add;
-mod remove;
 mod check;
+mod database;
 mod edit;
-mod password;
 mod error;
+mod list;
+mod password;
+mod remove;
 
 /// Utility to help memorize passwords
-/// 
+///
 /// This is a longer description.
 #[derive(Parser)]
 #[command(author, version, about, long_about)]
 #[command(propagate_version = true)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands
+    command: Commands,
 }
-
 
 #[derive(Subcommand)]
 enum Commands {
@@ -54,46 +52,50 @@ enum Commands {
     Testing,
 }
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> Result<(), error::AppErrors> {
     let cli = Cli::parse();
 
+    const DB_URL: &str = "sqlite://./db.db";
+
+    if !Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
+        println!("Creating local database...");
+        match Sqlite::create_database(DB_URL).await {
+            Ok(_) => {
+                println!("Create db success");
+                println!("Setting up database...");
+                let pool = SqlitePool::connect(DB_URL).await?;
+                database::setup_db(&pool).await?;
+                println!("Database set up")
+            }
+            Err(error) => panic!("error: {}", error),
+        };
+    } else {
+        println!("Database already exists");
+    }
+
+    let pool = SqlitePool::connect(DB_URL).await?;
+
     match &cli.command {
-        Commands::List(_) => {
-            list::list_all_accounts()
+        Commands::List(_) => list::list_all_accounts(&pool).await,
+        Commands::Add(data) => add::add_account(&pool, &data.account).await,
+        Commands::Edit(data) => edit::edit_account(&pool, &data.account).await,
+        Commands::Check(data) => match &data.account {
+            Some(account) => check::check_account(&pool, &account).await,
+            None => check::check_all_accounts(&pool).await,
         },
-        Commands::Add(data) => {
-            add::add_account(&data.account)
-        },
-        Commands::Edit(data) => {
-            edit::edit_account(&data.account)
-        }
-        Commands::Check(data) => {
-            match &data.account {
-                Some(account) => {
-                    check::check_account(&account)
-                },
-                None => {
-                    check::check_all_accounts()
-                }
-            }
-        },
-        Commands::Remove(data) => {
-            match &data.account {
-                Some(account) => {
-                    remove::remove_account(account)
-                },
-                None => {
-                    remove::remove_all_accounts()
-                }
-            }
+        Commands::Remove(data) => match &data.account {
+            Some(account) => remove::remove_account(&pool, account).await,
+            None => remove::remove_all_accounts(&pool).await,
         },
         Commands::Testing => {
-            let hash = password::get_password_from_user()?;
+            let hash = password::get_password_from_user().await?;
             // let test_hash = "argon2id$v=19$m=4096,t=3,p=1$kFqodVZyHfN9ZgRjRtdlhw$cKubT7PNsFGfX+BDd6RfyHKjtRwaDpmDLXbJS8ozlEE".to_string();
-            let pw_ok = password::verify_password(&hash)?;
+            let pw_ok = password::verify_password(&hash).await?;
             println!("Passwords ok: {pw_ok}");
+            Ok(())
         }
-    };
+    }?;
 
     Ok(())
 }
