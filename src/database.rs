@@ -1,10 +1,6 @@
 //! Handles all calls made to the database.
 
-use sqlx::{
-    migrate::MigrateDatabase,
-    sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode},
-    FromRow, Sqlite, SqlitePool,
-};
+use sqlx::{migrate::MigrateDatabase, FromRow, Sqlite, SqlitePool};
 
 /// Convenience struct providing read-only access to the account and password as stored in the database.
 #[derive(FromRow)]
@@ -29,8 +25,8 @@ impl Account {
 ///
 /// This code is called the first time that the program is called and it detects that there is no
 /// database found at the expected location.
-pub async fn setup_db() -> sqlx::Result<SqliteConnectOptions> {
-    const DB_URL: &str = "sqlite://./.passwords.db";
+pub async fn setup_db() -> sqlx::Result<&'static str> {
+    const DB_URL: &str = "sqlite://./passwords.db";
 
     if Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
         // TODO
@@ -39,13 +35,13 @@ pub async fn setup_db() -> sqlx::Result<SqliteConnectOptions> {
         // println!("Database already exists");
     } else {
         println!("Creating local database...");
-        match Sqlite::create_database(DB_URL).await {
+        match Sqlite::create_database(&DB_URL).await {
             Ok(_) => {
                 println!("Create db success");
                 println!("Setting up database...");
 
                 // Disable WAL to prevent those pesky files from showing up?
-                let pool = SqlitePool::connect(DB_URL).await?;
+                let pool = SqlitePool::connect(&DB_URL).await?;
 
                 let mut conn = pool.acquire().await?;
 
@@ -66,10 +62,7 @@ pub async fn setup_db() -> sqlx::Result<SqliteConnectOptions> {
         };
     };
 
-    Ok(SqliteConnectOptions::new()
-        .filename(&DB_URL)
-        .journal_mode(SqliteJournalMode::Off)
-        .locking_mode(SqliteLockingMode::Exclusive))
+    Ok(&DB_URL)
 }
 
 /// List all accounts stored in the database.

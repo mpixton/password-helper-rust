@@ -13,4 +13,3 @@ password memorized, great! Remove it with the `remove` command. Use `list` to se
 you have stored. And finally, if a password changes, use the `edit` command. If at any time you need help, 
 type `-h` for help with the whole utility, `--help` for more verbose output, and `help <command>` for help 
 with that specific command. 
-
