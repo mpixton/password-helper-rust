@@ -23,14 +23,14 @@ impl Account {
 
 /// Set up the passwords table to store the account and passwords.
 ///
-/// This code is called the first time that the program is called and it detects that there is no 
+/// This code is called the first time that the program is called and it detects that there is no
 /// database found at the expected location.
 pub async fn setup_db() -> sqlx::Result<&'static str> {
     const DB_URL: &str = "sqlite://./db.db";
 
     if Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
         // TODO
-        // Allow for a verbose flag to be passed to the program that will control if this gets 
+        // Allow for a verbose flag to be passed to the program that will control if this gets
         // logged or not. Linked to the larger todo of replacing println! with loq!.
         // println!("Database already exists");
     } else {
@@ -51,7 +51,9 @@ pub async fn setup_db() -> sqlx::Result<&'static str> {
                         password TEXT
                     );
                 "#,
-                ).execute(&mut conn).await?;
+                )
+                .execute(&mut conn)
+                .await?;
 
                 println!("Database set up");
             }
@@ -63,7 +65,7 @@ pub async fn setup_db() -> sqlx::Result<&'static str> {
 }
 
 /// List all accounts stored in the database.
-/// 
+///
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 pub async fn get_all_accounts(pool: &SqlitePool) -> sqlx::Result<Vec<Account>> {
@@ -86,7 +88,7 @@ pub async fn get_all_accounts(pool: &SqlitePool) -> sqlx::Result<Vec<Account>> {
 }
 
 /// Find an account in the database.
-/// 
+///
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to find
@@ -113,7 +115,7 @@ pub async fn get_account(pool: &SqlitePool, account: &String) -> sqlx::Result<Ac
 }
 
 /// Edit an account's password.
-/// 
+///
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to edit
@@ -145,7 +147,7 @@ pub async fn update_account_password(
 }
 
 /// Add an account and hashed password to the database.
-/// 
+///
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to add
@@ -175,7 +177,7 @@ pub async fn add_account(
 }
 
 /// Delete a specific account from the database.
-/// 
+///
 /// /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to delete
@@ -199,7 +201,7 @@ pub async fn delete_account(pool: &SqlitePool, account: &String) -> sqlx::Result
 }
 
 /// Delete all accounts from the database.
-/// 
+///
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 pub async fn delete_all_accounts(pool: &SqlitePool) -> sqlx::Result<()> {

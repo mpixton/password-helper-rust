@@ -4,7 +4,7 @@ use sqlx::SqlitePool;
 
 /// Edit an account's password
 ///
-/// Edit the `accounts`'s password. The command will silently fail if the `account` has not been 
+/// Edit the `accounts`'s password. The command will silently fail if the `account` has not been
 /// previously added.
 #[derive(Args)]
 pub struct Command {
@@ -13,7 +13,7 @@ pub struct Command {
 }
 
 /// Edit an account's password.
-/// 
+///
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to edit the password for

@@ -7,9 +7,9 @@ use sqlx::SqlitePool;
 pub struct Command {}
 
 /// List all acounts in the database.
-/// 
+///
 /// Lists all accounts stored, showing a help message if they have no accounts.
-/// 
+///
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 pub async fn list_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {

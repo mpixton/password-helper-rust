@@ -21,7 +21,7 @@ pub fn get_password_from_user() -> anyhow::Result<String> {
 }
 
 /// Prompts the user for a password, then compares it to a hash to see if they are the same.
-/// 
+///
 /// # Parameters
 /// * `password_hash` - hash of the password to check against
 pub fn verify_password(password_hash: &str) -> anyhow::Result<bool> {
