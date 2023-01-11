@@ -5,10 +5,10 @@ use sqlx::SqlitePool;
 
 /// Add an account
 ///
-/// Asks a user for a password to store alongside the <ACCOUNT>. Only one <ACCOUNT> name may be
+/// Asks a user for a password to store alongside the `account`. Only one `account` name may be
 /// present in the database at a time.
 #[derive(Args)]
-pub struct Add {
+pub struct Command {
     /// Name of the account to add
     pub account: String,
 }
@@ -44,6 +44,7 @@ pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<
         }?;
     };
 
-    println!("Pw hash is: {pw}");
+    // println!("Pw hash is: {pw}");
+    
     Ok(())
 }

@@ -7,7 +7,7 @@ use sqlx::SqlitePool;
 /// If [ACCOUNT] is provided, remove only that account. If omitted, purge all accounts from the
 /// database and list all the accounts removed.
 #[derive(Args)]
-pub struct Remove {
+pub struct Command {
     /// Name of the specific account to remove
     pub account: Option<String>,
 }

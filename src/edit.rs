@@ -6,7 +6,7 @@ use sqlx::SqlitePool;
 ///
 /// Edit the <ACCOUNT>'s password. The command will silently fail if the <ACCOUNT> has not been previously
 #[derive(Args)]
-pub struct Edit {
+pub struct Command {
     /// Name of the account to edit
     pub account: String,
 }
