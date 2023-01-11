@@ -52,10 +52,10 @@ async fn main() -> anyhow::Result<()> {
     // Parse the CLI struct
     let cli = Cli::parse();
 
-    // Setup the db, if needed, and return the db url
-    let db_url = database::setup_db().await?;
+    // Setup the db, if needed, and return the db connection options
+    let connect_options = database::setup_db().await?;
 
-    let pool = SqlitePool::connect(db_url).await?;
+    let pool = SqlitePool::connect_with(connect_options).await?;
 
     match &cli.command {
         Commands::List(_) => list::list_all_accounts(&pool).await,
