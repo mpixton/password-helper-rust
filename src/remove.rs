@@ -4,8 +4,9 @@ use sqlx::SqlitePool;
 
 /// Remove all accounts or specific account
 ///
-/// If [ACCOUNT] is provided, remove only that account. If omitted, purge all accounts from the
-/// database and list all the accounts removed.
+/// If `account` is provided, remove only that account. If omitted, purge all accounts from the
+/// database and list all the accounts removed. If `account` is provided and doesn't exist, nothing 
+/// will happen.
 #[derive(Args)]
 pub struct Command {
     /// Name of the specific account to remove
@@ -13,6 +14,9 @@ pub struct Command {
 }
 
 /// Remove all accounts from the database.
+/// 
+/// # Parameters
+/// * `pool` - [sqlx::SqlitePool] of connections to the database
 pub async fn remove_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
     println!("Removing all accounts...");
 
@@ -29,6 +33,10 @@ pub async fn remove_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
 }
 
 /// Remove a specific account from the database.
+/// 
+/// # Parameters
+/// * `pool` - [sqlx::SqlitePool] of connections to the database
+/// * `account` - name of the account to delete
 pub async fn remove_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     println!("Removing account {account}");
 

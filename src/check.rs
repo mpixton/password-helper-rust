@@ -13,6 +13,9 @@ pub struct Command {
 }
 
 /// Iterate through all accounts in the database, check the password for each.
+/// 
+/// # Parameters
+/// * `pool` - [sqlx::SqlitePool] of connections to the database
 pub async fn check_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
     println!("Testing you on your accounts...");
 
@@ -26,6 +29,10 @@ pub async fn check_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
 }
 
 /// Check a specific account's password.
+/// 
+/// # Parameters
+/// * `pool` - [sqlx::SqlitePool] of connections to the database
+/// * `account` - name of the account to test knowledge of
 pub async fn check_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     println!("Testing your knowledge  of {account}'s password");
 

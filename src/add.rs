@@ -45,6 +45,6 @@ pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<
     };
 
     // println!("Pw hash is: {pw}");
-    
+
     Ok(())
 }

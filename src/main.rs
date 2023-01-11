@@ -1,7 +1,7 @@
 // !!! Argon2 does not enable std feature flag by default.
 
 //! Simple CLI for testing a user on their passwords.
-//! 
+//!
 //! List of all commands:
 //! - List - list all accounts
 //! - Edit <account> - edit given account password
@@ -12,7 +12,7 @@
 //! - Remove [account] - remove a specific account from the database
 
 use clap::{Parser, Subcommand};
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
+use sqlx::SqlitePool;
 
 mod add;
 mod check;
@@ -49,27 +49,13 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // Parse the CLI struct
     let cli = Cli::parse();
 
-    const DB_URL: &str = "sqlite://./db.db";
+    // Setup the db, if needed, and return the db url
+    let db_url = database::setup_db().await?;
 
-    if Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
-        // println!("Database already exists");
-    } else {
-        println!("Creating local database...");
-        match Sqlite::create_database(DB_URL).await {
-            Ok(_) => {
-                println!("Create db success");
-                println!("Setting up database...");
-                let pool = SqlitePool::connect(DB_URL).await?;
-                database::setup_db(&pool).await?;
-                println!("Database set up");
-            }
-            Err(error) => panic!("error: {}", error),
-        };
-    }
-
-    let pool = SqlitePool::connect(DB_URL).await?;
+    let pool = SqlitePool::connect(db_url).await?;
 
     match &cli.command {
         Commands::List(_) => list::list_all_accounts(&pool).await,
