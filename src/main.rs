@@ -11,7 +11,14 @@
 //! - Remove - remove all accounts from the database
 //! - Remove [account] - remove a specific account from the database
 
-use clap::{Parser, Subcommand};
+use clap::{ArgAction, Parser, Subcommand};
+use log::LevelFilter;
+use log4rs::{
+    append::console::{ConsoleAppender, Target},
+    config::{Appender, Root, Logger},
+    encode::pattern::PatternEncoder,
+    Config,
+};
 use sqlx::SqlitePool;
 
 mod add;
@@ -35,6 +42,8 @@ mod remove;
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+    #[arg(short, long, action = ArgAction::Append)]
+    verbosity: Option<Vec<String>>,
 }
 
 /// All possible commands to interact with the program.
@@ -56,6 +65,29 @@ async fn main() -> anyhow::Result<()> {
     let db_url = database::setup_db().await?;
 
     let pool = SqlitePool::connect(db_url).await?;
+
+    let verbosity = cli.verbosity.unwrap_or_default();
+
+    let log_level = match verbosity.len() {
+        0 => LevelFilter::Info,
+        1 => LevelFilter::Debug,
+        _ => LevelFilter::Trace,
+    };
+
+    let stdout = ConsoleAppender::builder()
+        .target(Target::Stdout)
+        .encoder(Box::new(PatternEncoder::new("{m}\n")))
+        .build();
+
+    let config = Config::builder()
+        .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .logger(Logger::builder().build("sqlx", LevelFilter::Off))
+        .build(Root::builder().appender("stdout").build(log_level))
+        .unwrap();
+
+    let _handle = log4rs::init_config(config)?;
+
+    // SimpleLogger::new().with_module_level("sqlx", LevelFilter::Off).with_level(log_level).without_timestamps().init().unwrap();
 
     match &cli.command {
         Commands::List(_) => list::list_all_accounts(&pool).await,

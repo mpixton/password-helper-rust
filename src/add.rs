@@ -23,7 +23,7 @@ pub struct Command {
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to add to the local database
 pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
-    println!("Adding account {account}");
+    log::info!("Adding account {account}");
     let pw = password::get_password_from_user()?;
 
     let result = database::add_account(pool, account, &pw).await;

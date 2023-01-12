@@ -19,7 +19,7 @@ pub struct Command {
 pub async fn check_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
     let mut count_correct = 0;
 
-    println!("Testing you on your accounts...");
+    log::info!("Testing you on your accounts...");
 
     let results = database::get_all_accounts(pool).await?;
 
@@ -28,7 +28,7 @@ pub async fn check_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
 
         // TODO
         // Add a flag to allow users to go blind, not alerting them to the outcome of this account?
-        println!("That is {correct}");
+        log::info!("That is {correct}");
 
         count_correct = if correct {
             count_correct + 1
@@ -39,8 +39,8 @@ pub async fn check_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
 
     // TODO
     // Maybe provide for different message based on % correct?
-    println!("Total Accounts: {}", results.len());
-    println!("Total Correct: {count_correct}");
+    log::info!("Total Accounts: {}", results.len());
+    log::info!("Total Correct: {count_correct}");
 
     Ok(())
 }
@@ -53,7 +53,7 @@ pub async fn check_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
 pub async fn check_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     let correct = _check_account_password(pool, account).await?;
 
-    println!("That is {correct}");
+    log::info!("That is {correct}");
 
     Ok(())
 }
@@ -64,7 +64,7 @@ pub async fn check_account(pool: &SqlitePool, account: &String) -> anyhow::Resul
 /// to allow the [check_account] function to have a similar return type as the other commands
 /// while minimizing code duplication.
 async fn _check_account_password(pool: &SqlitePool, account: &String) -> anyhow::Result<bool> {
-    println!("Testing your knowledge  of {account}'s password");
+    log::info!("Testing your knowledge  of {account}'s password");
 
     // TODO: give the user more than one attempt?
     let result = database::get_account(pool, account).await?;

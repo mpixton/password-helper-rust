@@ -29,16 +29,13 @@ pub async fn setup_db() -> sqlx::Result<&'static str> {
     const DB_URL: &str = "sqlite://./passwords.db";
 
     if Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
-        // TODO
-        // Allow for a verbose flag to be passed to the program that will control if this gets
-        // logged or not. Linked to the larger todo of replacing println! with loq!.
-        // println!("Database already exists");
+        log::trace!("Database already exists");
     } else {
-        println!("Creating local database...");
+        log::info!("Creating local database...");
         match Sqlite::create_database(&DB_URL).await {
             Ok(_) => {
-                println!("Create db success");
-                println!("Setting up database...");
+                log::info!("Create db success");
+                log::info!("Setting up database...");
 
                 // Disable WAL to prevent those pesky files from showing up?
                 let pool = SqlitePool::connect(&DB_URL).await?;
@@ -56,7 +53,7 @@ pub async fn setup_db() -> sqlx::Result<&'static str> {
                 .execute(&mut conn)
                 .await?;
 
-                println!("Database set up");
+                log::info!("Database set up");
             }
             Err(error) => panic!("error: {}", error),
         };

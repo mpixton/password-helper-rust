@@ -18,17 +18,17 @@ pub struct Command {
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 pub async fn remove_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
-    println!("Removing all accounts...");
+    log::info!("Removing all accounts...");
 
     let results = database::get_all_accounts(pool).await?;
 
     for result in &results {
-        println!("Removing account {}", result.account());
+        log::info!("Removing account {}", result.account());
     }
 
     database::delete_all_accounts(pool).await?;
 
-    println!("All accounts removed");
+    log::info!("All accounts removed");
     Ok(())
 }
 
@@ -38,10 +38,10 @@ pub async fn remove_all_accounts(pool: &SqlitePool) -> anyhow::Result<()> {
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to delete
 pub async fn remove_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
-    println!("Removing account {account}");
+    log::info!("Removing account {account}");
 
     database::delete_account(pool, account).await?;
 
-    println!("{account} removed");
+    log::info!("{account} removed");
     Ok(())
 }

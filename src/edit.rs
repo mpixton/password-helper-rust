@@ -20,13 +20,13 @@ pub struct Command {
 pub async fn edit_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     // TODO
     // Should this create a new account if the `account` provided doesn't exist?
-    println!("Editing account {account}");
+    log::info!("Editing account {account}");
 
     let new_password = password::get_password_from_user()?;
 
     database::update_account_password(pool, account, &new_password).await?;
 
-    println!("{account} was updated");
+    log::info!("{account} was updated");
 
     Ok(())
 }
