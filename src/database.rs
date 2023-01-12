@@ -90,10 +90,10 @@ pub async fn get_all_accounts(pool: &SqlitePool) -> sqlx::Result<Vec<Account>> {
 /// # Parameters
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to find
-pub async fn get_account(pool: &SqlitePool, account: &String) -> sqlx::Result<Account> {
+pub async fn get_account(pool: &SqlitePool, account: &String) -> sqlx::Result<Option<Account>> {
     let mut conn = pool.acquire().await?;
 
-    let result: Account = sqlx::query_as(
+    let result: sqlx::Result<Option<Account>> = sqlx::query_as(
         r#"
         SELECT 
             account,
@@ -106,10 +106,10 @@ pub async fn get_account(pool: &SqlitePool, account: &String) -> sqlx::Result<Ac
     "#,
     )
     .bind(account)
-    .fetch_one(&mut conn)
-    .await?;
+    .fetch_optional(&mut conn)
+    .await;
 
-    Ok(result)
+    result
 }
 
 /// Edit an account's password.
@@ -125,7 +125,7 @@ pub async fn update_account_password(
 ) -> sqlx::Result<()> {
     let mut conn = pool.acquire().await?;
 
-    sqlx::query(
+    let rows_affected = sqlx::query(
         r#"
         UPDATE 
             passwords
@@ -139,7 +139,10 @@ pub async fn update_account_password(
     .bind(new_password_hash)
     .bind(account)
     .execute(&mut conn)
-    .await?;
+    .await?
+    .rows_affected();
+
+    log::debug!("Number of rows affected: {rows_affected}");
 
     Ok(())
 }
