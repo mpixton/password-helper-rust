@@ -16,6 +16,9 @@ pub enum AppErrors {
     /// Specific error for a SQLX Database Error of unique constraint violation
     #[error("Account {0:?} already exists")]
     AccountAlreadyExists(String),
+    /// Specific error for when record does not exists
+    #[error("Account {0:?} does not exists")]
+    AccountDoesNotExist(String),
 }
 
 /// Test for specific [sqlx::Error::Database] error code.'
