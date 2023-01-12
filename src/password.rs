@@ -14,8 +14,7 @@ pub fn get_password_from_user() -> anyhow::Result<String> {
 
     let hash = hasher.hash_password(password.as_bytes(), &salt)?;
 
-    // println!("Password is: {password}");
-    // println!("Hash is: {hash}");
+    log::trace!("Password hash {hash}");
 
     Ok(hash.to_string())
 }
@@ -32,10 +31,6 @@ pub fn verify_password(password_hash: &str) -> anyhow::Result<bool> {
     let passwords_match = Argon2::default()
         .verify_password(attempt.as_bytes(), &parsed_hash)
         .is_ok();
-
-    // TODO
-    // Turn into a verbose output
-    // println!("Passwords match? {passwords_match}");
 
     Ok(passwords_match)
 }

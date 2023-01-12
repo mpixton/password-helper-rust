@@ -18,8 +18,6 @@ pub struct Command {
 /// * `pool` - [sqlx::SqlitePool] of connections to the database
 /// * `account` - name of the account to edit the password for
 pub async fn edit_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
-    // TODO
-    // Should this create a new account if the `account` provided doesn't exist?
     log::info!("Editing account {account}");
 
     let new_password = password::get_password_from_user()?;
