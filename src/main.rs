@@ -2,7 +2,7 @@
 
 //! Simple CLI for testing a user on their passwords.
 //!
-//! List of all commands:
+//! List of all Subcommands:
 //! - List - list all accounts
 //! - Edit <account> - edit given account password
 //! - Add <account> - add an account
@@ -11,11 +11,11 @@
 //! - Remove - remove all accounts from the database
 //! - Remove [account] - remove a specific account from the database
 
-use clap::{ArgAction, Parser, Subcommand};
+use clap::{command, Arg, ArgAction, Args, Command, Parser, Subcommand, FromArgMatches};
 use log::LevelFilter;
 use log4rs::{
     append::console::{ConsoleAppender, Target},
-    config::{Appender, Root, Logger},
+    config::{Appender, Logger, Root},
     encode::pattern::PatternEncoder,
     Config,
 };
@@ -41,14 +41,12 @@ mod remove;
 #[command(author, version, about, long_about)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
-    #[arg(short, long, action = ArgAction::Append)]
-    verbosity: Option<Vec<String>>,
+    command: Subcommands,
 }
 
-/// All possible commands to interact with the program.
+/// All possible Subcommands to interact with the program.
 #[derive(Subcommand)]
-enum Commands {
+enum Subcommands {
     Add(add::Command),
     Check(check::Command),
     Edit(edit::Command),
@@ -58,17 +56,19 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let cli = Command::new("password helper").arg(
+        Arg::new("verbose")
+            .short('v')
+            .long("verbose")
+            .action(ArgAction::Count),
+    );
+
     // Parse the CLI struct
-    let cli = Cli::parse();
+    let cli = Cli::augment_args(cli);
 
-    // Setup the db, if needed, and return the db connection options
-    let db_url = database::setup_db().await?;
+    let matches = cli.get_matches();
 
-    let pool = SqlitePool::connect(db_url).await?;
-
-    let verbosity = cli.verbosity.unwrap_or_default();
-
-    let log_level = match verbosity.len() {
+    let log_level = match matches.get_count("verbose") {
         0 => LevelFilter::Info,
         1 => LevelFilter::Debug,
         _ => LevelFilter::Trace,
@@ -87,17 +87,22 @@ async fn main() -> anyhow::Result<()> {
 
     let _handle = log4rs::init_config(config)?;
 
-    // SimpleLogger::new().with_module_level("sqlx", LevelFilter::Off).with_level(log_level).without_timestamps().init().unwrap();
+    // Setup the db, if needed, and return the db connection options
+    let db_url = database::setup_db().await?;
 
-    match &cli.command {
-        Commands::List(_) => list::list_all_accounts(&pool).await,
-        Commands::Add(data) => add::add_account(&pool, &data.account).await,
-        Commands::Edit(data) => edit::edit_account(&pool, &data.account).await,
-        Commands::Check(data) => match &data.account {
+    let pool = SqlitePool::connect(db_url).await?;
+
+    let subcommand = Subcommands::from_arg_matches(&matches).map_err(|err| err.exit()).unwrap(); 
+
+    match subcommand {
+        Subcommands::List(_) => list::list_all_accounts(&pool).await,
+        Subcommands::Add(data) => add::add_account(&pool, &data.account).await,
+        Subcommands::Edit(data) => edit::edit_account(&pool, &data.account).await,
+        Subcommands::Check(data) => match &data.account {
             Some(account) => check::check_account(&pool, account).await,
             None => check::check_all_accounts(&pool).await,
         },
-        Commands::Remove(data) => match &data.account {
+        Subcommands::Remove(data) => match &data.account {
             Some(account) => remove::remove_account(&pool, account).await,
             None => remove::remove_all_accounts(&pool).await,
         },
