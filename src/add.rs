@@ -1,4 +1,8 @@
-use crate::{database, error::AppErrors, password};
+use crate::{
+    database,
+    error::{match_sqlx_error_code, AppErrors},
+    password,
+};
 use anyhow::anyhow;
 use clap::Args;
 use sqlx::SqlitePool;
@@ -13,36 +17,25 @@ pub struct Command {
     pub account: String,
 }
 
-/// Ask a user for their account's password, and then store the account and password hash in the database.
+/// Adds an account and password to the database
+/// 
+/// # Parameters
+/// * `pool` - [sqlx::SqlitePool] of connections to the database
+/// * `account` - name of the account to add to the local database
 pub async fn add_account(pool: &SqlitePool, account: &String) -> anyhow::Result<()> {
     println!("Adding account {account}");
     let pw = password::get_password_from_user()?;
 
     let result = database::add_account(pool, account, &pw).await;
 
-    // This really ugly construct is the best way I found to get to the bottom of why the error was caused in
-    // the database. Ultimately, errors caused by code 1555, which is the code for a Unique Constraint violation,
-    // should be handled a little different. Instead of an uglier error message, we want a pretty message that
-    // alerts the user that the account is already in the database. This error should be the most common one,
-    // which is why we are not handling other errors.
-    if let Err(outer_err) = result {
-        match outer_err {
-            sqlx::error::Error::Database(inner_err) => {
-                if let Some(code) = inner_err.code() {
-                    if *"1555" == code {
-                        Err(anyhow!(AppErrors::AccountAlreadyExists(
-                            account.to_string()
-                        )))
-                    } else {
-                        Err(anyhow!(inner_err))
-                    }
-                } else {
-                    Err(anyhow!(inner_err))
-                }
-            }
-            _ => Err(anyhow!(AppErrors::Database(outer_err))),
-        }?;
-    };
+    // Code 1555 is the specific code for a Unique Constraint violation. If the user is attempting 
+    // to add an account that already exists, throw a custom error message instead of the uglier 
+    // default one.
+    match_sqlx_error_code(
+        result,
+        &"1555",
+        anyhow!(AppErrors::AccountAlreadyExists(account.to_string())),
+    ).await?;
 
     // println!("Pw hash is: {pw}");
 
